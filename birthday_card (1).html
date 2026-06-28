@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feliz Aniversário, Sayori! 💖</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&amp;family=Comic+Neue:wght@700&amp;display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Comic Neue', cursive;
+            overflow: hidden;
+            background: linear-gradient(135deg, #ff9ece, #a8d4ff, #fff9a6);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            color: #333;
+        }
+        
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .container {
+            position: relative;
+            z-index: 2;
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+        }
+        
+        .intro-text {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 0 20px rgba(255, 105, 180, 0.8),
+                         0 0 40px rgba(135, 206, 250, 0.6);
+            animation: glowPulse 2s infinite alternate, scaleIntro 1.5s ease;
+            margin-bottom: 30px;
+            opacity: 0;
+        }
+        
+        @keyframes glowPulse {
+            from { text-shadow: 0 0 20px #ff69b4, 0 0 40px #87cefa; }
+            to { text-shadow: 0 0 30px #ff1493, 0 0 60px #00bfff, 0 0 80px #ffd700; }
+        }
+        
+        @keyframes scaleIntro {
+            from { transform: scale(0.5); }
+            to { transform: scale(1); }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 30px;
+            padding: 40px 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2),
+                        inset 0 0 60px rgba(255, 182, 193, 0.4);
+            border: 8px solid #ffb6c1;
+            position: relative;
+            opacity: 0;
+            transform: scale(0.7);
+            transition: all 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3;
+        }
+        
+        .card.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .card::before {
+            content: '💖';
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3rem;
+            animation: floatHeart 3s infinite ease-in-out;
+        }
+        
+        .message {
+            font-size: 1.35rem;
+            line-height: 1.5;
+            color: #333;
+            margin: 25px 0;
+            min-height: 180px;
+        }
+        
+        .final-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: white;
+            text-shadow: 0 0 30px #ff69b4;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 10;
+            text-align: center;
+            width: 90%;
+        }
+        
+        .heart {
+            position: absolute;
+            font-size: 1.5rem;
+            animation: floatingHeart 8s linear infinite;
+            opacity: 0.8;
+            z-index: 2;
+        }
+        
+        @keyframes floatingHeart {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-100px) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div class="container">
+        <h1 id="introText" class="intro-text">Feliz Aniversário,<br>Sayori! 💖</h1>
+        
+        <div id="card" class="card">
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+    
+    <!-- Final message removido conforme solicitado -->
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        // Particle arrays
+        let balloons = [];
+        let confettis = [];
+        let hearts = [];
+        let stars = [];
+        let fireworks = [];
+        let particles = [];
+        
+        class Balloon {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = height + 50;
+                this.size = 25 + Math.random() * 20;
+                this.speed = 1 + Math.random() * 2;
+                this.color = `hsl(${Math.random()*360}, 90%, 70%)`;
+                this.sway = Math.random() * 2 - 1;
+            }
+            update() {
+                this.y -= this.speed;
+                this.x += Math.sin(this.y / 50) * this.sway;
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.size/2, this.size * 0.7, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // string
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, this.size * 0.6);
+                ctx.lineTo(0, this.size * 1.8);
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+        
+        class Confetti {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height * -1;
+                this.size = 8 + Math.random() * 8;
+                this.speedY = 2 + Math.random() * 4;
+                this.speedX = Math.random() * 3 - 1.5;
+                this.rotation = Math.random() * 360;
+                this.rotSpeed = Math.random() * 10 - 5;
+                this.color = `hsl(${Math.random()*360}, 100%, 60%)`;
+            }
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                this.rotation += this.rotSpeed;
+                this.speedY += 0.05;
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation * Math.PI / 180);
+                ctx.fillStyle = this.color;
+                ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size * 0.4);
+                ctx.restore();
+            }
+        }
+        
+        class HeartParticle {
+            constructor(x, y) {
+                this.x = x || Math.random() * width;
+                this.y = y || height + 30;
+                this.size = 18 + Math.random() * 12;
+                this.speed = 1.5 + Math.random() * 2;
+                this.opacity = 0.9;
+            }
+            update() {
+                this.y -= this.speed;
+                this.opacity -= 0.003;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+                ctx.font = `${this.size}px Arial`;
+                ctx.fillText('💖', this.x, this.y);
+                ctx.restore();
+            }
+        }
+        
+        class Star {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = 4 + Math.random() * 6;
+                this.twinkle = Math.random() * Math.PI * 2;
+            }
+            update() {
+                this.twinkle += 0.08;
+            }
+            draw() {
+                const alpha = Math.sin(this.twinkle) * 0.5 + 0.5;
+                ctx.save();
+                ctx.globalAlpha = alpha * 0.9;
+                ctx.fillStyle = '#fff';
+                ctx.font = `${this.size}px Arial`;
+                ctx.fillText('✨', this.x, this.y);
+                ctx.restore();
+            }
+        }
+        
+        class Firework {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = height * 0.3 + Math.random() * height * 0.4;
+                this.exploded = false;
+                this.particles = [];
+                this.hue = Math.random() * 360;
+            }
+            explode() {
+                this.exploded = true;
+                for (let i = 0; i < 60; i++) {
+                    const p = {
+                        x: this.x,
+                        y: this.y,
+                        vx: Math.random() * 8 - 4,
+                        vy: Math.random() * 8 - 4,
+                        life: 80 + Math.random() * 40,
+                        color: `hsl(${this.hue}, 100%, 65%)`,
+                        size: 5 + Math.random() * 4
+                    };
+                    this.particles.push(p);
+                }
+            }
+            update() {
+                if (!this.exploded) {
+                    this.y -= 6;
+                    if (this.y < height * 0.35) this.explode();
+                } else {
+                    for (let i = this.particles.length - 1; i >= 0; i--) {
+                        const p = this.particles[i];
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.vy += 0.15;
+                        p.life--;
+                        if (p.life <= 0) this.particles.splice(i, 1);
+                    }
+                }
+            }
+            draw() {
+                if (!this.exploded) {
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    for (let p of this.particles) {
+                        const alpha = p.life / 100;
+                        ctx.globalAlpha = alpha;
+                        ctx.fillStyle = p.color;
+                        ctx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+                    }
+                }
+            }
+        }
+        
+        // Create initial elements
+        function createInitialParticles() {
+            // Balloons
+            for (let i = 0; i < 18; i++) {
+                balloons.push(new Balloon());
+            }
+            // Stars
+            for (let i = 0; i < 35; i++) {
+                stars.push(new Star());
+            }
+        }
+        
+        let typingInterval;
+        function typeMessage() {
+            const text = `Feliz Aniversário, Sayori! 💖\n\nQueria ter te conhecido pessoalmente, mas infelizmente ainda não foi possível. Eu te amo muito e queria jogar Brawl Stars contigo`;
+            const messageEl = document.getElementById('message');
+            messageEl.innerHTML = '';
+            let i = 0;
+            
+            typingInterval = setInterval(() => {
+                if (i < text.length) {
+                    if (text[i] === '\n') {
+                        messageEl.innerHTML += '<br><br>';
+                    } else {
+                        messageEl.innerHTML += text[i];
+                    }
+                    i++;
+                } else {
+                    clearInterval(typingInterval);
+                }
+            }, 35);
+        }
+        
+        function showIntro() {
+            const intro = document.getElementById('introText');
+            intro.style.opacity = '1';
+            
+            // Launch some balloons and confetti
+            setTimeout(() => {
+                for (let i = 0; i < 25; i++) {
+                    confettis.push(new Confetti());
+                }
+            }, 800);
+        }
+        
+        function transitionToCard() {
+            const intro = document.getElementById('introText');
+            const card = document.getElementById('card');
+            
+            intro.style.transition = 'opacity 1.2s';
+            intro.style.opacity = '0';
+            
+            setTimeout(() => {
+                card.classList.add('show');
+                typeMessage();
+                
+                // More continuous hearts
+                setInterval(() => {
+                    if (Math.random() > 0.4) hearts.push(new HeartParticle());
+                }, 180);
+            }, 1400);
+        }
+        
+        // Função final removida conforme solicitado
+        
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            
+            // Balloons
+            for (let i = balloons.length - 1; i >= 0; i--) {
+                const b = balloons[i];
+                b.update();
+                b.draw();
+                if (b.y < -50) balloons.splice(i, 1);
+            }
+            
+            // Confetti
+            for (let i = confettis.length - 1; i >= 0; i--) {
+                const c = confettis[i];
+                c.update();
+                c.draw();
+                if (c.y > height + 50) confettis.splice(i, 1);
+            }
+            
+            // Hearts
+            for (let i = hearts.length - 1; i >= 0; i--) {
+                const h = hearts[i];
+                h.update();
+                h.draw();
+                if (h.opacity <= 0) hearts.splice(i, 1);
+            }
+            
+            // Stars
+            stars.forEach(s => {
+                s.update();
+                s.draw();
+            });
+            
+            // Fireworks removidos
+            
+            // Occasional new balloons and confetti
+            if (Math.random() < 0.08) balloons.push(new Balloon());
+            if (Math.random() < 0.12) confettis.push(new Confetti());
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Start everything
+        window.onload = function() {
+            createInitialParticles();
+            animate();
+            showIntro();
+            
+            // Sequence
+            setTimeout(() => {
+                transitionToCard();
+            }, 5200);
+            
+            // Continuous background hearts
+            setInterval(() => {
+                hearts.push(new HeartParticle());
+            }, 650);
+        };
+    </script>
+</body>
+</html>
